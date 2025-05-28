@@ -1,0 +1,3 @@
+BUILD\NUCLEO_F446RE\ARMC6\FastPWM\Device\FastPWM_KSDK.o: \
+  FastPWM\Device\FastPWM_KSDK.cpp \
+  BUILD\NUCLEO_F446RE\ARMC6\mbed_config.h
