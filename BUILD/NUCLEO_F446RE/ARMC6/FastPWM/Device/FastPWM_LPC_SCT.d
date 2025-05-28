@@ -1,3 +1,0 @@
-BUILD\NUCLEO_F446RE\ARMC6\FastPWM\Device\FastPWM_LPC_SCT.o: \
-  FastPWM\Device\FastPWM_LPC_SCT.cpp \
-  BUILD\NUCLEO_F446RE\ARMC6\mbed_config.h
