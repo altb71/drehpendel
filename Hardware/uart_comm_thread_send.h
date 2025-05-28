@@ -13,7 +13,7 @@ using namespace std;
 class uart_comm_thread_send{
 public:
 // public members
-    uart_comm_thread_send(Data_Xchange *,IO_handler *,BufferedSerial*, float);
+    uart_comm_thread_send(IO_handler *,BufferedSerial*, float);
     virtual ~uart_comm_thread_send();
     void loop(void);             // runs the statemachine, call this function periodicly, returns true when new data ready (only true for 1 cycle)
     void start_uart(void);
@@ -40,9 +40,7 @@ private:
     Thread                  thread;
     Ticker                  ticker;
 	void sendThreadFlag();
-    IO_handler *m_io;
-    Data_Xchange *m_data;
-    
+    IO_handler *m_io;  
 };
 
 #endif

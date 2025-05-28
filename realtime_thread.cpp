@@ -1,17 +1,15 @@
 #include "realtime_thread.h"
 #include <cstdint>
-using namespace std;
 
 extern GPA myGPA;
 extern DataLogger myDataLogger;
 
 // contructor for controller loop
-realtime_thread::realtime_thread(Data_Xchange *data,IO_handler *io, Mirror_Kinematic *mk, float Ts) : thread(osPriorityHigh,4096)
+realtime_thread::realtime_thread(IO_handler *io, pendel_kinematics *kin, float Ts) : thread(osPriorityHigh,4096)
 {
     this->Ts = Ts;
-    this->m_data = data;        // link to data
     this->m_io = io;            // link to hardware
-    this->m_mk = mk;            // link to kinematics
+    this->m_kin = kin;            // link to kinematics
     ti.reset();
     ti.start();
     controller_state = CNTRL_IDLE;  // the local state machine
@@ -22,58 +20,43 @@ realtime_thread::~realtime_thread() {}
 // ----------------------------------------------------------------------------
 // this is the main loop called every Ts with high priority
 void realtime_thread::loop(void){
-    float i_des0,i_des1,v_des,phi_des,v_des_vorst;
-    uint8_t k = 0;
-    float kv = 0;
-    float kp = .02;
+    float u_des,i_des1,v_des,phi_des,v_des_vorst;
+    K4 << -0.3162,5.9553,-0.3132,0.5182;
     while(1)
         {
         ThisThread::flags_wait_any(threadFlag);
         // THE LOOP ------------------------------------------------------------
         m_io->read_encoders_calc_speed();       // first read encoders and calculate speed
+        x_state << m_io->get_phi_motor(),m_io->get_phi_pendel(),m_io->get_v_motor(),m_io->get_v_pendel();
+
         // -------------------------------------------------------------
         // at very beginning: move system slowly to find the zero pulse
         float ti_loc = ti.read();
         switch(controller_state)
             {
             case CNTRL_IDLE:
-                i_des0 = i_des1 = 0;
-                break;
-            case FIND_INDEX:
-                // Aufgabe 8.x
-                i_des0 = 0;
-                i_des1 = 0;
-                m_io->enable_motors(true);      // enable motors, still read the bigButton to enable
-                break;
-            case GPA_IDENT_PLANT:
-                m_io->enable_motors(true);      // enable motors, still read the bigButton to enable
-                // AUFGABE 5.2, 5.3
-                i_des0 = 0; 
-                i_des1 = 0;
-                break;
-            case CNTRL_VEL:
-                // AUFGABE 6.3, 6.4
-                i_des0 = 0;
-                i_des1 = 0;
-                m_io->enable_motors(true);      // enable motors
+                u_des =  0;
                 break;
             case CNTRL_POS:
-                // AUFGABE 7.x
-                m_io->enable_motors(true);      // enable motors
-            // Winkelregler 
+                if(fabsf(m_io->get_phi_pendel())< 0.1)
+                    {
+                    m_io->enable_motors(true);      // enable motors
+                    u_des = K4*x_state;
+                    }
+                else{
+                    m_io->enable_motors(false);      // enable motors
+                    u_des = 0;
+                    }
+                break;
+            case CNTRL_STOP:
+                m_io->enable_motors(false);      // enable motors
+                u_des = 0;
                 break;
             // ------------------------ do the control first
             default:
                 break;
             }
-        m_io->write_current(0,i_des0);
-        m_io->write_current(1,i_des1);       // set 2nd motor to 0A
-        m_io->set_laser_on_off(m_data->laser_on);
-        if(++k>=10)     // kinematic transformation from angles to xy values only every 10th time.
-            {
-            m_mk->P2X(m_data->sens_phi,m_data->est_xy);
-            k = 0;
-            }
+        m_io->write_voltage(u_des);
             
         }// endof the main loop
 }
@@ -88,17 +71,13 @@ void realtime_thread::start_loop(void)
 }
 // several public functions to allow the controller statemachine to switch 
 // to other states from external.
-void realtime_thread::switch_to_find_index()
+void realtime_thread::switch_to_cntrl_stop()
 {
-    controller_state = FIND_INDEX;
+    controller_state = CNTRL_STOP;
 }
 void realtime_thread::switch_to_GPA_ident()
 {
     controller_state = GPA_IDENT_PLANT;
-}
-void realtime_thread::switch_to_cntrl_vel()
-{
-    controller_state = CNTRL_VEL;
 }
 void realtime_thread::switch_to_cntrl_pos()
 {

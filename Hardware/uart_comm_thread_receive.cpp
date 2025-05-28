@@ -6,14 +6,13 @@ extern DataLogger myDataLogger;
 extern GPA myGPA;
 
 // #### constructor
-uart_comm_thread_receive::uart_comm_thread_receive(Data_Xchange *data,Mirror_Kinematic *mk, BufferedSerial *com, float Ts):
+uart_comm_thread_receive::uart_comm_thread_receive(pendel_kinematics *kin, BufferedSerial *com, float Ts):
                                             thread(osPriorityBelowNormal1, 512*2)//thread(osPriorityHigh1, 1024)//
  {  
     // init serial
     this->uart = com;
     this->Ts = Ts;
-    this->m_data = data;
-    this->m_mk = mk;
+    this->m_kin = kin;
 }
 
 uart_comm_thread_receive::~uart_comm_thread_receive() {}
@@ -165,19 +164,15 @@ bool uart_comm_thread_receive::parseMessageBuffer(int i){
 			switch(msg_id2)
 				{
 				case 1:
-					m_data->cntrl_phi_des[0] = *(float *)&buffer_rx[7];
 					return true;
 					break;
 				case 2:
-					m_data->cntrl_phi_des[1] = *(float *)&buffer_rx[7];
 					return true;
 					break;
 				case 3:
-					m_data->cntrl_xy_des[0] = 	*(float *)&buffer_rx[7];
 					return true;
 					break;
 				case 4:
-					m_data->cntrl_xy_des[1] = *(float *)&buffer_rx[7];
 					return true;
 					break;
 				default:
@@ -190,19 +185,15 @@ bool uart_comm_thread_receive::parseMessageBuffer(int i){
 			switch(msg_id2)
 				{
 				case 1:
-					m_data->cntrl_phi_des[0] += *(float *)&buffer_rx[7];
 					return true;
 					break;
 				case 2:
-					m_data->cntrl_phi_des[1] += *(float *)&buffer_rx[7];
 					return true;
 					break;
 				case 3:
-					m_data->cntrl_xy_des[0] += 	*(float *)&buffer_rx[7];
 					return true;
 					break;
 				case 4:
-					m_data->cntrl_xy_des[1] += *(float *)&buffer_rx[7];
 					return true;
 					break;
 				default:
@@ -250,11 +241,6 @@ bool uart_comm_thread_receive::parseMessageBuffer(int i){
                 switch(msg_id2)
                     {
                     case 1:
-                        if(buffer_rx[7] == 1)
-                            m_data->laser_on = true;
-                        else 
-                            m_data->laser_on = false;
-                        return true;
                         break;
                     }
                 break;
@@ -264,11 +250,6 @@ bool uart_comm_thread_receive::parseMessageBuffer(int i){
 			switch(msg_id2)
 				{
 				case 1:
-					if(buffer_rx[7] == 1)
-						m_mk->trafo_is_on = true;
-					else 
-						m_mk->trafo_is_on = false;
-					return true;
 					break;
 				}
 			break;
@@ -278,11 +259,6 @@ bool uart_comm_thread_receive::parseMessageBuffer(int i){
 			switch(msg_id2)
 				{
 				case 1:
-					if(buffer_rx[7] == 1)
-						m_mk->external_control = true;
-					else 
-						m_mk->external_control = false;
-					return true;
 					break;
 				}
 			break;

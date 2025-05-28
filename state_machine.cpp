@@ -28,18 +28,10 @@ void state_machine::loop(void){
         switch(CS)
             {
             case INIT:
-                if(ti.read()>1)
+                if(ti.read()>5)
                     {
                     ti.reset();
-                    m_loop->switch_to_GPA_ident();
-                    CS = STATE_GPA;
-                    }
-                break;
-            case REFERENCE:
-                if(m_io->motors_are_referenced())
-                    {
-                    ti.reset();
-                    m_loop->switch_to_cntrl_vel();
+                    m_loop->switch_to_cntrl_pos();
                     CS = STATE_GPA;
                     }
                 break;
@@ -47,9 +39,17 @@ void state_machine::loop(void){
                 break;
             case CONTROL:
                 break;
+            case STOP:
+                break;
             default:
                 break;
             }   // end switch
+            // WATCHDOG
+            if(fabsf(m_io->get_v_motor())>30)
+                {
+                m_loop->switch_to_cntrl_stop();
+                CS = STOP;
+                }
         }// endof the main loop
 }
 

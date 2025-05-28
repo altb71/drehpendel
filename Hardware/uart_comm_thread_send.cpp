@@ -3,7 +3,6 @@
 #include "uart_comm_thread_send.h"
 #include "DataLogger.h"
 #include "GPA.h"
-#include "data_structs.h"
 
 
 extern DataLogger myDataLogger;
@@ -12,11 +11,10 @@ extern GPA myGPA;
 
 
 // #### constructor
-uart_comm_thread_send::uart_comm_thread_send(Data_Xchange *data, IO_handler *io,BufferedSerial *com, float Ts): thread(osPriorityBelowNormal, 2*512)
+uart_comm_thread_send::uart_comm_thread_send(IO_handler *io,BufferedSerial *com, float Ts): thread(osPriorityBelowNormal, 2*512)
  {  
     // init serial
     this->uart = com;
-    this->m_data = data;
     this->Ts = Ts;
     gpa_stop_sent = false;
     this->m_io = io;
@@ -41,16 +39,10 @@ void uart_comm_thread_send::loop(void)
                     send_state = 1011;
                 break;
 			case 1011:
-				send(101,12,2*4,(char *)&(m_data->sens_phi[0]));		// send actual phi values (1 and 2)
-				send_state = 1012;
 				break;	
 			case 1012:
-				send(101,34,2*4,(char *)&(m_data->est_xy[0]));		// send actual xy values 
-				send_state = 210;
 				break;	
 			case 125:		// number of iterations in the trafo
-				send(125,1,1,(char *)&m_data->num_it);		
-				send_state = 210;
 				break;
 			case 210:		// number of iterations in the trafo
 				if(myDataLogger.new_data_available)

@@ -7,8 +7,7 @@
 #include "DataLogger.h"
 #include "GPA.h"
 #include "uart_comm_thread_send.h"
-#include "data_structs.h"
-#include "Mirror_Kinematic.h"
+#include "pendel_kinematics.h"
 
 
 using namespace std;
@@ -16,7 +15,7 @@ using namespace std;
 
 class uart_comm_thread_receive{
 public:
-    uart_comm_thread_receive(Data_Xchange *, Mirror_Kinematic *,BufferedSerial*, float);
+    uart_comm_thread_receive( pendel_kinematics *,BufferedSerial*, float);
     virtual ~uart_comm_thread_receive();
     void start_uart(void);
     uart_comm_thread_send *m_se;
@@ -59,6 +58,5 @@ private:
     Thread                  thread;
     Ticker                  ticker;
 	void sendThreadFlag();
-    Data_Xchange *m_data;
-    Mirror_Kinematic *m_mk;
+    pendel_kinematics *m_kin;
 };

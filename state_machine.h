@@ -4,7 +4,7 @@
 #include "realtime_thread.h"
 
 #define INIT 1
-#define REFERENCE 2
+#define STOP 2
 #define CONTROL 3
 #define STATE_GPA 4
 

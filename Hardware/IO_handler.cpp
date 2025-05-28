@@ -2,54 +2,57 @@
 
 #define PI 3.1415927
 // constructors
+#define VOLTAGE 16.8
 
 
 // Deconstructor
-IO_handler::IO_handler(Data_Xchange *data,Mirror_Kinematic *mk, float Ts) : di1(.0005,Ts),di2(.0005,Ts),big_button(PC_3),counter1(PA_6, PC_7),
-                            indexpulse1(PA_8),index1(counter1,indexpulse1), counter2(PB_6, PB_7),indexpulse2(PB_4),index2(counter2,indexpulse2),
-                            i_enable(PC_4),laser_on(PB_0), i_des1(PA_5),i_des2(PA_4)
+IO_handler::IO_handler(pendel_kinematics *kin, float Ts) : di1(2*Ts,Ts),di2(2*Ts,Ts),big_button(PC_3),counter1(PA_6, PC_7),
+                            counter2(PB_6, PB_7),u_enable(PB_9), mot_pwm(PB_15),mot_dir(PB_14)
 {
-    this->m_data = data;
-    this->m_mk = mk;
-    i2u.setup(-.80,.80,0.0f,1.0f);
-    uw1 = Enc_unwrap_scale(4000,16);
-    uw2 = Enc_unwrap_scale(4000,16);
-    i_enable = 0;       // disable current first
+    this->m_kin = kin;
+    u2pwm.setup(0,VOLTAGE,0.01f,.99f,.01f,.99f);
+    mot_pwm.period_ms((int)(Ts*1000));
+    mot_pwm.write(.01);
+	
+    uw1 = Enc_unwrap_scale(4096,16);
+    uw2 = Enc_unwrap_scale(4096,16);
     counter1.reset();   // encoder reset
     counter2.reset();   // encoder reset
-    this->set_laser_on_off(false);
 }
 IO_handler::~IO_handler() {} 
 
 void IO_handler::read_encoders_calc_speed(void)
 {
-    m_data->sens_phi[0] = uw1(counter1);
-    m_data->sens_phi[1] = uw2(counter2);
-    m_data->sens_Vphi[0] = di1(m_data->sens_phi[0]);
-    m_data->sens_Vphi[1] = di2(m_data->sens_phi[1]);
+    phi_motor = uw1(counter1);
+    phi_pendel = uw2(counter2) - 3.1415927f;
+    v_motor = di1(phi_motor);
+    v_pendel = di2(phi_pendel);
 }
 
 void IO_handler::enable_motors(bool enable)
 {
-    i_enable = big_button && enable;    
-}
-void IO_handler::force_enable_motors(bool enable)
-{
-    i_enable = enable;    
+    u_enable = enable;    
 }
 
-void IO_handler::write_current(uint8_t mot_nb, float i_des)
+void IO_handler::write_voltage(float u_des)
 {
-    if(mot_nb== 0)
-        i_des1 = i2u(i_des);
-    else if(mot_nb == 1)
-        i_des2 = i2u(i_des);    
+        mot_pwm.write(u2pwm(fabs(u_des)));  // write uses duty 0...1
+        mot_dir = u_des>=0;
 }
-void IO_handler::set_laser_on_off(bool laser_on_off)
+
+float IO_handler::get_phi_motor()
 {
-    laser_on = laser_on_off;
+    return phi_motor;
 }
-bool IO_handler::motors_are_referenced()
+float IO_handler::get_v_motor()
 {
-    return (index1.is_referenced && index2.is_referenced);
+    return phi_motor;
+}
+float IO_handler::get_phi_pendel()
+{
+    return phi_motor;
+}
+float IO_handler::get_v_pendel()
+{
+    return phi_motor;
 }
