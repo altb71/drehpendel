@@ -1,40 +1,19 @@
-#define S1 true
-
 #include "IO_handler.h"
-#include <cstdint>
-
-
 
 // constructors
-IO_handler::IO_handler(void): a_out(PA_5),a_in1(PA_6),a_in2(PA_7),d_out(PC_8)
+IO_handler::IO_handler(void): encoder_motor(PA_6, PC_7, ENCODER_MOTOR_COUNTS_PER_TURN)
+                            , encoder_pendulum(PB_6, PB_7, ENCODER_PENDULUM_COUNTS_PER_TURN)
+                            , pwm(PB_15)
+                            , pwm_val(0.0f)
+                            , dir(PB_14)
+                            , enable(PB_9)
+                            , current(PA_7)
+                            , fault(PB_8)
 {
-    a_out.write(0);
-    lc_in = LinearCharacteristics(0,1,-1,1);
-    lc_out = LinearCharacteristics(-1,1,0,1);
-    return;    
-}
-IO_handler::~IO_handler() {} 
-
-float IO_handler::read_ain1(void)
-{
-    return lc_in(a_in1.read());    
-}
-float IO_handler::read_ain2(void)
-{
-    return lc_in(a_in2.read());    
+    pwm.write(0.0f); // enusure motor is off
+    pwm.period_us(MOTOR_PWM_PERIOD_US);
+    dir = 0;
+    enable = 0;
 }
 
-void IO_handler::write_aout(float output)
-{
-    set_value = (output);
-    a_out.write(lc_out(set_value));
-}
-
-float IO_handler::get_set_value()
-{
-    return set_value;
-}
-void IO_handler::write_dout(bool val)
-{
-    d_out = val;
-}
+IO_handler::~IO_handler() {}

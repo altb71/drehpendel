@@ -11,7 +11,7 @@ extern GPA myGPA;
 
 // #### constructor
 uart_comm_thread_send::uart_comm_thread_send(IO_handler *io,BufferedSerial *com, float Ts): thread(osPriorityBelowNormal, 2*512)
- {  
+ {
     // init serial
     this->uart = com;
     this->Ts = Ts;
@@ -33,7 +33,7 @@ void uart_comm_thread_send::loop(void)
         ThisThread::flags_wait_any(threadFlag);
         //---  The LOOP --------------------------------------------------------
     	send_fast_data();
-			
+
 	}// loop
 }
 
@@ -64,15 +64,15 @@ void uart_comm_thread_send::send_slow_data(void){
     float buf[3];
     char str[30];
     switch(send_state_slow)
-        {   
+        {
             case 100: // only at startup
-                send_text((char *)"Start RCRC on MBed");
+                send_text((char *)"Start Drehpendel on MBed");
                 send_state_slow = 115;
                 break;
             case 115:
                 buf[0] = m_io->get_set_value();
-                buf[1] = m_io->read_ain1();
-                buf[2] = m_io->read_ain2();
+                buf[1] = m_io->read_encoder_motor();
+                buf[2] = m_io->read_encoder_pendulum();
                 send(115,1,12,(char *)&buf[0]);
                 send_state_slow = 210;
                 break;
@@ -97,7 +97,7 @@ void uart_comm_thread_send::send_slow_data(void){
             case 250:		// send GPA values
 				send_gpa_data();
                 send_state_slow = 115;
-                break;			
+                break;
             default:
                 send_state_slow = 115;
                 break;
@@ -117,7 +117,7 @@ void uart_comm_thread_send::send_fast_data()
 
 // ------------------- start uart ----------------
 void uart_comm_thread_send::start_uart(void){
-		
+
 		thread.start(callback(this, &uart_comm_thread_send::loop));
 		ticker.attach(callback(this, &uart_comm_thread_send::sendThreadFlag), Ts);
 }
@@ -150,7 +150,7 @@ void uart_comm_thread_send::send(uint8_t id1, uint8_t id2, uint16_t N, char *m)
 	uart->write(&csm_tail,3);
 }
 void uart_comm_thread_send::send_text(const char *txt)
-{	
+{
 	uint16_t N=0;
     char buffer[40];
    	while(txt[N] != 0)		// get length of text

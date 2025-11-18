@@ -8,3 +8,9 @@ BUILD
 mbed-os
 docs/review
 __pycache__
+*.asv
+*.slxc
+*_sldrt_win64/
+*.autosave
+*.rxw64
+slprj/

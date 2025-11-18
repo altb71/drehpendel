@@ -11,7 +11,7 @@
 #include "uart_comm_thread_send.h"
 #include "uart_comm_thread_receive.h"
 
-float Ts = 0.0005f;
+float Ts = 0.00005f; // TODO: Test if 20 kHz really is working, you should not go lower than 10 kHz
 GPA myGPA (1, 1000, 30, .1,.2, Ts);
 DataLogger myDataLogger(1);
 
