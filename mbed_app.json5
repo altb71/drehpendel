@@ -1,0 +1,12 @@
+
+{
+   "target_overrides": {
+      "*": {
+         "platform.stdio-baud-rate": 9600, // matches PlatformIO default
+         "platform.stdio-buffered-serial": 1,
+
+         // Uncomment to use mbed-baremetal instead of mbed-os
+         // "target.application-profile": "bare-metal"
+      }
+   }
+}
