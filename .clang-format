@@ -12,5 +12,10 @@ BraceWrapping:
   AfterNamespace: false
 
 BreakConstructorInitializersBeforeComma: true
-ColumnLimit: 120
+ColumnLimit: 500
+
 AccessModifierOffset: -4
+
+IndentCaseLabels: true
+
+AllowShortEnumsOnASingleLine: false
