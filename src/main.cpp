@@ -1,29 +1,17 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2019 ARM Limited
- * SPDX-License-Identifier: Apache-2.0
- */
-
-#include "mbed.h"
 #include "IO_handler.h"
+#include "mbed.h"
 #include "realtime_thread.h"
-#include "GPA.h"
-#include "DataLogger.h"
-#include "uart_comm_thread_send.h"
-#include "uart_comm_thread_receive.h"
-
-float Ts = 0.00005f; // TODO: Test if 20 kHz really is working, you should not go lower than 10 kHz
-GPA myGPA (1, 1000, 30, .1,.2, Ts);
-DataLogger myDataLogger(1);
 
 int main()
 {
-    // thi input/output handling
-    IO_handler hardware;
-// Communication is put in the RT thread here! (also Serial Port definitions)
-    realtime_thread rt_thread(&hardware,Ts);
+    // Input-Output handler
+    IO_handler io_handler;
+
+    // Real-time thread with sampling time Ts
+    float Ts = 500.0e-6f;
+    realtime_thread rt_thread(io_handler, Ts);
     rt_thread.start_loop();
 
-    while (true) {
+    while (true)
         ThisThread::sleep_for(500ms);
-    }
 }
