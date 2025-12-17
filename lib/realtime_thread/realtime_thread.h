@@ -13,10 +13,10 @@
 using namespace std::chrono;
 
 #define POWERSUPPLY_VOLTAGE 24.0f // Voltage of the power supply in Volts
-#define OFFSET_VOLTAGE 2.0f       // Offset voltage to overcome motor deadzone in Volts
+#define OFFSET_VOLTAGE 2.16f      // Offset voltage to overcome motor deadzone in Volts
 #define WATCHDOG_TIMEOUT 0.3f     // Watchdog timeout in seconds
-#define KP_I 1.5000f              // Proportional gain current controller
-#define KI_I 2.0735e+03f          // Integral gain current controller
+#define KP_I 2.0000f              // Proportional gain current controller
+#define KI_I 2.7646e+03f          // Integral gain current controller
 #define F_CUT_HZ 180.0f           // Second order low-pass filter cutoff frequency in Hz
 #define D 0.7f                    // Second order low-pass filter damping ratio
 #define F0_HZ 0.05f

@@ -48,7 +48,7 @@ bode(G, 2*pi*G.Frequency), grid on
 
 z = tf('z', Ts);
 
-Kp = 1.5
+Kp = 2.0
 Tn = 1/(2*pi*220)
 Ki = Kp / Tn
 C = Kp + Ki * Ts / (1 - z^-1);

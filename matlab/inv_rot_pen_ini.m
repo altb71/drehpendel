@@ -60,8 +60,8 @@ theta0 = [0; 0];
 [A, B] = linearize_furuta_equilibrium(theta0, param);
 B = B * param.km; % Account for Current Input
 Q = diag([1 10 0.001 0.001]);
-r = 0.5 * 1;
-K_unten = lqr(A, B, Q, r) % 1.0000   -2.7105    0.2224    0.1105
+r = 1;
+K_unten = lqr(A, B, Q, r)
 dc_unten = dcgain( ss(A - B*K_unten, B, eye(4), 0) );
 V_unten = 1 / dc_unten(1)
 
@@ -70,8 +70,8 @@ theta0 = [0; pi];
 [A, B] = linearize_furuta_equilibrium(theta0, param);
 B = B * param.km; % Account for Current Input
 Q = diag([1 10 0.001 0.001]);
-r = 0.5 * 10;
-K_oben = lqr(A, B, Q, r) % -0.3162    2.5541   -0.1292    0.2016
+r = 10;
+K_oben = lqr(A, B, Q, r)
 dc_oben = dcgain( ss(A - B*K_oben, B, eye(4), 0) );
 V_oben = 1 / dc_oben(1)
 
