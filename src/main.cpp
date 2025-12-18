@@ -8,7 +8,7 @@ int main()
     IO_handler io_handler;
 
     // Real-time thread with sampling time Ts
-    float Ts = 500.0e-6f;
+    float Ts = 200.0e-6f;
     float Ts_fast = 50.0e-6f;
     realtime_thread rt_thread(io_handler, Ts, Ts_fast);
     rt_thread.start_loop();

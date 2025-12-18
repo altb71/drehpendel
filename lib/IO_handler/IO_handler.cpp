@@ -10,6 +10,8 @@ IO_handler::IO_handler(void)
     , enable(PB_9)
     , current(PA_7)
     , fault(PB_8)
+    , rtt_do(PB_4)
+    , frtt_do(PB_5)
 {
     pwm.write(0.0f); // enusure motor is off
     pwm.period_us(MOTOR_PWM_PERIOD_US);
