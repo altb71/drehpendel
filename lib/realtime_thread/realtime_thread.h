@@ -1,24 +1,19 @@
 #pragma once
 
-#include <Eigen/Dense>
+#include <chrono>
 
 #include "Chirp.h"
-#include "IIRFilter.h"
 #include "IO_handler.h"
 #include "SerialStream.h"
 #include "ThreadFlag.h"
+#include "fast_realtime_thread.h"
 #include "mbed.h"
 #include "serial_pipe.h"
 
 using namespace std::chrono;
 
-#define POWERSUPPLY_VOLTAGE 24.0f // Voltage of the power supply in Volts
-#define OFFSET_VOLTAGE 2.16f      // Offset voltage to overcome motor deadzone in Volts
-#define WATCHDOG_TIMEOUT 0.3f     // Watchdog timeout in seconds
-#define KP_I 2.0000f              // Proportional gain current controller
-#define KI_I 2.7646e+03f          // Integral gain current controller
-#define F_CUT_HZ 180.0f           // Second order low-pass filter cutoff frequency in Hz
-#define D 0.7f                    // Second order low-pass filter damping ratio
+// High-level timing / excitation constants
+#define WATCHDOG_TIMEOUT 0.3f // Watchdog timeout in seconds
 #define F0_HZ 0.05f
 #define T1_SEC 1 / F0_HZ
 #define AMP_V 4.0f
@@ -27,7 +22,7 @@ using namespace std::chrono;
 class realtime_thread
 {
 public:
-    realtime_thread(IO_handler &io_handler, float Ts);
+    realtime_thread(IO_handler &io, float Ts, float Ts_fast);
     virtual ~realtime_thread();
     void start_loop(void);
 
@@ -38,7 +33,6 @@ private:
     float Ts;
     IO_handler &io_handler;
     SerialPipe sp; // Serial pipe for UART communication
-    IIRFilter lowPass2;
 
     SerialStream m_SerialStream;
     Timer m_Timer;
@@ -46,7 +40,9 @@ private:
     Chirp m_Chirp;
     float m_sinarg{0.0f};
 
+    fast_realtime_thread fast_rt_thread;
+
     void loop(void);
     void sendSignal();
-    float saturate(float val, float min, float max);
+    float clamp(float val, float min, float max);
 };
