@@ -11,7 +11,7 @@
 #include "serial_pipe.h"
 
 #define BAUD 115200 // Tested 230400 and 460800 not working, without implementing a protocol we just use safe 115200
-#define WATCHDOG_TIMEOUT 0.3f // Watchdog timeout in seconds
+#define WATCHDOG_TIMEOUT_SEC 0.3f // Watchdog timeout in seconds
 // #define F0_HZ 0.05f
 // #define T1_SEC 1 / F0_HZ
 // #define OFFSET_V 6.0f

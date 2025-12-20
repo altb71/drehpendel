@@ -4,13 +4,13 @@
 #include <cstring>
 
 realtime_thread::realtime_thread(IO_handler &io, float Ts, float Ts_fast)
-    : thread(osPriorityHigh1, 1024)
+    : thread(osPriorityHigh1, OS_STACK_SIZE)
     , Ts(Ts)
     , io_handler(io)
     , serialPipe(USBTX, USBRX, BAUD, 8, 5)
     , fast_rt_thread(io, Ts_fast)
-// , m_SerialStream(PB_10, PC_5, 30, 2000000)
-// , m_Chirp(F0_HZ, (1.0f / 2.0f) / Ts, T1_SEC, Ts)
+    // , m_SerialStream(PB_10, PC_5, 30, 2000000)
+    // , m_Chirp(F0_HZ, (1.0f / 2.0f) / Ts, T1_SEC, Ts)
 {
 }
 
@@ -23,7 +23,7 @@ void realtime_thread::loop(void)
 
     bool is_enabled = false;
 
-    uint32_t watchdog_counter = (uint32_t)(WATCHDOG_TIMEOUT / Ts + 0.5f);
+    uint32_t watchdog_counter = (uint32_t)(WATCHDOG_TIMEOUT_SEC / Ts + 0.5f);
 
     // m_Timer.start();
     // m_time_previous_us = m_Timer.elapsed_time();
@@ -47,7 +47,7 @@ void realtime_thread::loop(void)
                 if (watchdog_counter > 0) {
                     watchdog_counter--;
                     if (watchdog_counter == 0 && is_enabled) {
-                        // Watchdog timeout: no valid communication for WATCHDOG_TIMEOUT seconds
+                        // Watchdog timeout: no valid communication for WATCHDOG_TIMEOUT_SEC seconds
                         is_enabled = false;
                         io_handler.set_enable_motor(false);
                         fast_rt_thread.updateState(false, 0.0f);
@@ -57,7 +57,7 @@ void realtime_thread::loop(void)
             }
 
             // We have a valid fresh packet -> reset watchdog
-            watchdog_counter = (uint32_t)(WATCHDOG_TIMEOUT / Ts + 0.5f);
+            watchdog_counter = (uint32_t)(WATCHDOG_TIMEOUT_SEC / Ts + 0.5f);
 
             // From host: 1 float value (4 bytes) + enable (1 byte) are sent
             float current_cmd = 0.0f;
@@ -70,14 +70,14 @@ void realtime_thread::loop(void)
 
             // Drive fast loop according to current enable state
             float current = 0.0f;
+            float motor_angle = 0.0f;
+            float pendulum_angle = 0.0f;
             if (is_enabled)
-                current = fast_rt_thread.updateState(true, current_cmd);
+                fast_rt_thread.updateStateAndReturnMeasurements(true, current_cmd, current, motor_angle, pendulum_angle);
             else
-                current = fast_rt_thread.updateState(false, 0.0f);
+                fast_rt_thread.updateStateAndReturnMeasurements(false, 0.0f, current, motor_angle, pendulum_angle);
 
             // Write encoder values + actual current back to host (3 floats)
-            const float motor_angle = io_handler.read_encoder_motor();
-            const float pendulum_angle = io_handler.read_encoder_pendulum();
             memcpy(&tx_buf[0], &motor_angle, sizeof(float));
             memcpy(&tx_buf[4], &pendulum_angle, sizeof(float));
             memcpy(&tx_buf[8], &current, sizeof(float));
@@ -89,7 +89,7 @@ void realtime_thread::loop(void)
             if (watchdog_counter > 0) {
                 watchdog_counter--;
                 if (watchdog_counter == 0 && is_enabled) {
-                    // Watchdog timeout: no communication for WATCHDOG_TIMEOUT seconds
+                    // Watchdog timeout: no communication for WATCHDOG_TIMEOUT_SEC seconds
                     // -> force motor and current loop disabled
                     is_enabled = false;
                     io_handler.set_enable_motor(false);
