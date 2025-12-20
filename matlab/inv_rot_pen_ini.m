@@ -17,7 +17,7 @@ f_cut = 250.0;
 D = 0.9;
 Gf_mod = tf(get_lowpass2(f_cut, D, Ts_fast));
 
-figure(5)
+figure(1)
 subplot(121)
 step(Gf_mod, 2*Ts), grid on
 subplot(122)

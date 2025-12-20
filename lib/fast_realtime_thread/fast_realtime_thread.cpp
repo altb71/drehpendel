@@ -14,6 +14,8 @@ fast_realtime_thread::fast_realtime_thread(IO_handler &io, float Ts)
     lowPass2[0].lowPass2Init(F_CUT_HZ, D, Ts);
     lowPass2[1].lowPass2Init(F_CUT_HZ, D, Ts);
 
+    pidCntrl.setup(KP_I, KI_I, Ts, (-POWERSUPPLY_VOLTAGE + OFFSET_VOLTAGE), (POWERSUPPLY_VOLTAGE - OFFSET_VOLTAGE));
+
 #if PERFORM_GPA_MEAS
     // closed-loop measurement
     const float fMin = 10.0f;
@@ -53,9 +55,6 @@ void fast_realtime_thread::updateStateAndReturnMeasurements(bool enable, float c
 
 void fast_realtime_thread::loop(void)
 {
-    float kp_i = KP_I;
-    float ki_i = KI_I;
-    float u_i = 0.0f;
 
 #if PERFORM_GPA_MEAS
     io_handler.set_enable_motor(true);
@@ -94,10 +93,8 @@ void fast_realtime_thread::loop(void)
 #if PERFORM_GPA_MEAS
             current_error += exc + 0.6f;
 #endif
-            // I-Term and saturation
-            u_i = clamp(u_i + ki_i * current_error * Ts, -POWERSUPPLY_VOLTAGE, POWERSUPPLY_VOLTAGE);
-            // Control output and saturation
-            float u = clamp(u_i + kp_i * current_error, -POWERSUPPLY_VOLTAGE, POWERSUPPLY_VOLTAGE);
+            // Controller
+            const float u = pidCntrl.update(current_error, current);
 
             // Caluclate direction and PWM value
             if (u > 0.0f)
@@ -113,7 +110,7 @@ void fast_realtime_thread::loop(void)
 #endif
         } else {
             io_handler.write_pwm_motor(0.0f);
-            u_i = 0.0f;
+            pidCntrl.reset();
         }
 
         io_handler.set_enable_frtt_do(false);

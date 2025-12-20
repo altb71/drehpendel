@@ -4,6 +4,7 @@
 
 #include "IIRFilter.h"
 #include "IO_handler.h"
+#include "PIDCntrl.h"
 #include "ThreadFlag.h"
 #include "mbed.h"
 #include "rtos.h"
@@ -15,9 +16,11 @@
 #endif
 
 #define POWERSUPPLY_VOLTAGE 24.0f // Voltage of the power supply in Volts
-#define OFFSET_VOLTAGE 2.16f      // Offset voltage to overcome motor deadzone in Volts
-#define KP_I 3.9811f              // Proportional gain current controller
-#define KI_I 1.3772e+04f          // Integral gain current controller
+#define OFFSET_VOLTAGE 1.5f      // Offset voltage to overcome motor deadzone in Volts
+
+#define KP_I 6.3096f              // Proportional gain current controller
+#define KI_I 2.1828e+04f          // Integral gain current controller
+
 #define F_CUT_HZ 250.0f           // Second order low-pass filter cutoff frequency in Hz
 #define D 0.9f                    // Second order low-pass filter damping ratio
 
@@ -41,6 +44,7 @@ private:
     float Ts;
     IO_handler &io_handler;
     IIRFilter lowPass2[2];
+    PIDCntrl pidCntrl;
 
     rtos::Mutex m_mutex;
     bool m_is_enabled{false};

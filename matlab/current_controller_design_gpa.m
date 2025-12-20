@@ -72,14 +72,23 @@ G_act = G / Gf_mod;
 
 %% New Controller and Filter
 
-Kp = db2mag(12)
+Kp = db2mag(16)
 Tn = 2.8906e-04; % L/R
 Ki = Kp/Tn
-C_mod = Kp + Ki / ((1 - z^-1) / Ts);
+Kd = 0;
+tau_f  = 0 / (2*pi*1e3);
+tau_ro = 0 / (2*pi*4e3);
+
+C_mod = pid(Kp, Ki, Kd, tau_f, Ts, ...
+    'IFormula', 'BackwardEuler', 'DFormula', 'Trapezoidal') * ...
+    c2d(tf(1, [tau_ro 1]), Ts, 'tustin');
 
 L = C_mod * G_act;
 S = feedback(1, L);
 T = 1 - S;
+
+figure(4)
+bode(C_mod), grid on
 
 figure(5)
 margin(L), grid on
