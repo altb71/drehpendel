@@ -7,21 +7,25 @@ Ts_fast = 50e-6;
 
 s = zpk('s');
 
-Tf = 1 / (2*pi*60);
+Tf = 1 / (2*pi*100);
 G_diff = c2d(s / (Tf*s + 1), Ts, 'tustin');
 
 theta0 = [0; 0] * pi/180;
 param = get_parameter();
 
+f_cut = 680.0;
+D = 0.6;
+G_notch = tf(get_notch(f_cut, D, Ts_fast));
+
 f_cut = 250.0;
 D = 0.9;
-Gf_mod = tf(get_lowpass2(f_cut, D, Ts_fast));
+G_lowpass2 = tf(get_lowpass2(f_cut, D, Ts_fast));
 
 figure(1)
 subplot(121)
-step(Gf_mod, 2*Ts), grid on
+step(G_notch, G_lowpass2, 2*Ts), grid on
 subplot(122)
-bode(Gf_mod), grid on
+bode(G_notch, G_lowpass2), grid on
 
 
 %% Extract Models from Simulink and Compare (only mechanical Part)
@@ -71,7 +75,8 @@ theta0 = [0; 0];
 B = B * param.km; % Account for Current Input
 Q = diag([1 10 0.001 0.001]);
 r = 0.5 * 1;
-[K_unten, ~, P_unten] = lqr(A, B, Q, r)
+[K_unten, ~, P_unten] = lqr(A, B, Q, r) % 1.4142   -3.6276    0.3168    0.2349
+abs(P_unten)
 dc_unten = dcgain( ss(A - B*K_unten, B, eye(4), 0) );
 V_unten = 1 / dc_unten(1)
 
@@ -81,7 +86,8 @@ theta0 = [0; pi];
 B = B * param.km; % Account for Current Input
 Q = diag([1 10 0.001 0.001]);
 r = 0.5 * 10;
-[K_oben, ~, P_oben] = lqr(A, B, Q, r)
+[K_oben, ~, P_oben] = lqr(A, B, Q, r) % -0.4472    3.4376   -0.1555    0.3031
+abs(P_oben)
 dc_oben = dcgain( ss(A - B*K_oben, B, eye(4), 0) );
 V_oben = 1 / dc_oben(1)
 

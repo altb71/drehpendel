@@ -16,10 +16,13 @@
 #endif
 
 #define POWERSUPPLY_VOLTAGE 24.0f // Voltage of the power supply in Volts
-#define OFFSET_VOLTAGE 1.5f      // Offset voltage to overcome motor deadzone in Volts
+#define OFFSET_VOLTAGE 2.0f       // Offset voltage to overcome motor deadzone in Volts
 
 #define KP_I 6.3096f              // Proportional gain current controller
 #define KI_I 2.1828e+04f          // Integral gain current controller
+
+#define F_CUT_HZ_NOTCH 680.0f     // Notch filter cutoff frequency in Hz
+#define D_NOTCH 0.6f              // Notch filter damping
 
 #define F_CUT_HZ 250.0f           // Second order low-pass filter cutoff frequency in Hz
 #define D 0.9f                    // Second order low-pass filter damping ratio
@@ -43,7 +46,8 @@ private:
     ThreadFlag threadFlag;
     float Ts;
     IO_handler &io_handler;
-    IIRFilter lowPass2[2];
+    IIRFilter notch[2];
+    IIRFilter lowPass2;
     PIDCntrl pidCntrl;
 
     rtos::Mutex m_mutex;
