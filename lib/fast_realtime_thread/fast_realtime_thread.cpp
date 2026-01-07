@@ -11,12 +11,12 @@ fast_realtime_thread::fast_realtime_thread(IO_handler &io, float Ts)
     , Ts(Ts)
     , io_handler(io)
 {
-    notch[0].notchInit(F_CUT_HZ_NOTCH, D_NOTCH, Ts);
-    notch[1].notchInit(F_CUT_HZ_NOTCH, D_NOTCH, Ts);
+    notchEncoders[0].notchInit(F_CUT_HZ_NOTCH, D_NOTCH, Ts);
+    notchEncoders[1].notchInit(F_CUT_HZ_NOTCH, D_NOTCH, Ts);
 
-    lowPass2.lowPass2Init(F_CUT_HZ, D, Ts);
+    lowPass2CurrentSetpoint.lowPass2Init(F_CUT_HZ, D, Ts);
 
-    pidCntrl.setup(KP_I, KI_I, Ts, (-POWERSUPPLY_VOLTAGE + OFFSET_VOLTAGE), (POWERSUPPLY_VOLTAGE - OFFSET_VOLTAGE));
+    pidCntrl.setup(KP_I, KI_I, 0.0f, 0.0f, TAU_RO_I, Ts, (-POWERSUPPLY_VOLTAGE + OFFSET_VOLTAGE), (POWERSUPPLY_VOLTAGE - OFFSET_VOLTAGE));
 
 #if PERFORM_GPA_MEAS
     // closed-loop measurement
@@ -73,8 +73,8 @@ void fast_realtime_thread::loop(void)
 
         // Read current and filtered encoder values
         const float current = io_handler.read_current();
-        const float motor_angle = notch[0].apply(io_handler.read_encoder_motor());
-        const float pendulum_angle = notch[1].apply(io_handler.read_encoder_pendulum());
+        const float motor_angle = notchEncoders[0].apply(io_handler.read_encoder_motor());
+        const float pendulum_angle = notchEncoders[1].apply(io_handler.read_encoder_pendulum());
 
         bool is_enabled;
         float current_setpoint;
@@ -91,7 +91,7 @@ void fast_realtime_thread::loop(void)
         if (is_enabled) {
 
             // Error
-            float current_error = lowPass2.apply(current_setpoint) - current;
+            float current_error = lowPass2CurrentSetpoint.apply(current_setpoint) - current;
 #if PERFORM_GPA_MEAS
             current_error += exc + 0.6f;
 #endif
@@ -113,7 +113,7 @@ void fast_realtime_thread::loop(void)
         } else {
             io_handler.write_pwm_motor(0.0f);
             pidCntrl.reset();
-            lowPass2.reset(0.0f);
+            lowPass2CurrentSetpoint.reset(0.0f);
         }
 
         io_handler.set_enable_frtt_do(false);

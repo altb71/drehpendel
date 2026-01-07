@@ -72,12 +72,12 @@ G_act = G / Gf_mod;
 
 %% New Controller and Filter
 
-Kp = db2mag(16)
-Tn = 2.8906e-04; % L/R
+Kp = 2.5
+Tn = 0.0013 / 4.5320; % L/R
 Ki = Kp/Tn
 Kd = 0;
 tau_f  = 0 / (2*pi*1e3);
-tau_ro = 0 / (2*pi*4e3);
+tau_ro = 1 / (2*pi*3e3);
 
 C_mod = pid(Kp, Ki, Kd, tau_f, Ts, ...
     'IFormula', 'BackwardEuler', 'DFormula', 'Trapezoidal') * ...
