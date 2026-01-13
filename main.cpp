@@ -11,7 +11,7 @@
 #include "uart_comm_thread_receive.h"
 #include "state_machine.h"
  
-float Ts = 0.002f;                    // sampling time
+float Ts = 0.01f;                    // sampling time
 // --------- local functions
 //----------------------------------------- global variables (uhh!) ---------------------------
 //init values:    (f0,   f1, nbPts, A0, A1, Ts)
@@ -42,6 +42,8 @@ int main()
     loop.start_loop();
     sm.start_loop();
     while(1)
-        ThisThread::sleep_for(200);
-     
+    {
+        ThisThread::sleep_for(250);
+        printf("x: %1.2f %1.2f %1.2f %1.2f \r\n",hardware.get_phi_motor(),hardware.get_phi_pendel(),hardware.get_v_motor(),hardware.get_v_pendel());
+    }
 }   // END OF main

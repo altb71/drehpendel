@@ -2,6 +2,7 @@
 #include "mbed.h"
 #include "IO_handler.h"
 #include "realtime_thread.h"
+#include <cstdint>
 
 #define INIT 1
 #define STOP 2
@@ -16,6 +17,7 @@ public:
     state_machine(IO_handler *,realtime_thread *,float Ts);
     virtual     ~state_machine();
     void start_loop(void);
+    uint8_t get_state(void);
 
 private:
     void loop(void);

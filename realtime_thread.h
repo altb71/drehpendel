@@ -19,6 +19,8 @@ using namespace Eigen;
 #define GPA_IDENT_PLANT 10
 #define CNTRL_POS 20
 #define CNTRL_STOP 30
+#define WRITE_PWM 40
+
 
 
 // This is the loop class, it is not a controller at first hand, it guarantees a cyclic call
@@ -34,6 +36,9 @@ public:
     void switch_to_GPA_ident(void);
     void switch_to_cntrl_vel(void);
     void switch_to_cntrl_pos(void);
+    void switch_to_write_pwm(void);
+    uint8_t get_state(void);
+
 
 private:
     void loop(void);

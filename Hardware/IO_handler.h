@@ -30,7 +30,6 @@ public:
 private:
     IIR_filter di1;
     IIR_filter di2;
-    DigitalIn big_button;         // Enable button an backside
     ///------------- Encoder -----------------------
     EncoderCounter counter1;    // initialize counter on PA_6 and PC_7
     // ------------------------------------

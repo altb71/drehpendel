@@ -21,7 +21,8 @@ realtime_thread::~realtime_thread() {}
 // this is the main loop called every Ts with high priority
 void realtime_thread::loop(void){
     float u_des,i_des1,v_des,phi_des,v_des_vorst;
-    K4 << -0.3162,5.9553,-0.3132,0.5182;
+    float dir = 1;
+    K4 << -1.0000,12.2102,-0.6507,1.1559;
     while(1)
         {
         ThisThread::flags_wait_any(threadFlag);
@@ -32,16 +33,20 @@ void realtime_thread::loop(void){
         // -------------------------------------------------------------
         // at very beginning: move system slowly to find the zero pulse
         float ti_loc = ti.read();
+        if(fmod(ti_loc,2)<1)
+            dir = 1;
+            else
+             dir = -1;;
         switch(controller_state)
             {
             case CNTRL_IDLE:
                 u_des =  0;
                 break;
             case CNTRL_POS:
-                if(fabsf(m_io->get_phi_pendel())< 0.1)
+                if(fabsf(m_io->get_phi_pendel())< 0.2)
                     {
                     m_io->enable_motors(true);      // enable motors
-                    u_des = K4*x_state;
+                    u_des = -K4*x_state;
                     }
                 else{
                     m_io->enable_motors(false);      // enable motors
@@ -52,10 +57,14 @@ void realtime_thread::loop(void){
                 m_io->enable_motors(false);      // enable motors
                 u_des = 0;
                 break;
-            // ------------------------ do the control first
+            case WRITE_PWM:
+                m_io->enable_motors(true);      // enable motors
+                u_des = 1.5;//fmodf(ti_loc,4);
+                break;
             default:
                 break;
             }
+
         m_io->write_voltage(u_des);
             
         }// endof the main loop
@@ -83,6 +92,10 @@ void realtime_thread::switch_to_cntrl_pos()
 {
     controller_state = CNTRL_POS;
 }
+void realtime_thread::switch_to_write_pwm()
+{
+    controller_state = WRITE_PWM;
+}
 void realtime_thread::init_controllers(void)
 {
     // set values for your velocity and position controller here!
@@ -91,4 +104,8 @@ void realtime_thread::init_controllers(void)
 void realtime_thread::reset_pids(void)
 {
     // reset all cntrls.
+}
+uint8_t realtime_thread::get_state()
+{
+    return controller_state;
 }

@@ -32,6 +32,7 @@ void state_machine::loop(void){
                     {
                     ti.reset();
                     m_loop->switch_to_cntrl_pos();
+                    //m_loop->switch_to_write_pwm();
                     CS = STATE_GPA;
                     }
                 break;
@@ -47,8 +48,8 @@ void state_machine::loop(void){
             // WATCHDOG
             if(fabsf(m_io->get_v_motor())>30)
                 {
-                m_loop->switch_to_cntrl_stop();
-                CS = STOP;
+                //m_loop->switch_to_cntrl_stop();
+                //CS = STOP;
                 }
         }// endof the main loop
 }
@@ -60,4 +61,8 @@ void state_machine::start_loop(void)
 {
     thread.start(callback(this, &state_machine::loop));
     ticker.attach(callback(this, &state_machine::sendSignal), Ts);
+}
+uint8_t state_machine::get_state()
+{
+    return CS;
 }
