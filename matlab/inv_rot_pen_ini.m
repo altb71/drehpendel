@@ -1,5 +1,4 @@
 clc, clear variables
-addpath inv_rot_pen_sldrt\
 %% Modell Initialisieren
 
 % Sampling time
@@ -41,4 +40,3 @@ r = 0.5 * 10;
 sys_cl = ss(A - B*K, B, eye(4), 0);
 dc = dcgain( sys_cl );
 V = 1 / dc(1)
-
