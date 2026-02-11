@@ -2,6 +2,9 @@
 #include "mbed.h"
 #include "realtime_thread.h"
 
+// Note:
+// - You find the compiled firmware in the firmware folder. Make sure to update the firmware if you make changes to the code.
+
 int main()
 {
     // Input-Output handler
